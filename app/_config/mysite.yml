@@ -1,0 +1,10 @@
+---
+Name: myproject
+---
+SilverStripe\Core\Manifest\ModuleManifest:
+  project: app
+
+SS4form\App\PageTypes:
+  comments:
+    enabled: false
+    enabled_cms: false
