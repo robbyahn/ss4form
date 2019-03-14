@@ -2,10 +2,11 @@
 namespace SS4form\App;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
+
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use GuzzleHttp\Exception\ClientException;
 use SilverStripe\Core\Environment;
 
 /**
@@ -15,14 +16,12 @@ use SilverStripe\Core\Environment;
 class BusStopGateway
 {   
     /**
-     * https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5
+     * web service api : https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5
      * @return null|string
      */
     public function getAllStops()
     {   
-        return $this->call('get', sprintf(
-            'https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5'
-        ));
+        return $this->call('GET', 'https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5');
     }
 
     
@@ -37,39 +36,13 @@ class BusStopGateway
      */
     public function call($type, $parameters)
     {
-        $client = new Client([
-            'base_uri' => Environment::getEnv('https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5'),
-            'headers'  => [
-                'Authorization' => sprintf('Bearer %s', Environment::getEnv('token_goes_here'))
-            ]
-        ]);
-
-        //var_dump($client);
-
+        $client = new Client();
+        $response = $client->request($type, $parameters);
+       
         try {
-            $proxy = [];
-
-            if (Environment::getEnv('SS_OUTBOUND_PROXY') && Environment::getEnv('SS_OUTBOUND_PROXY_PORT')) {
-                $proxy = Environment::getEnv('SS_OUTBOUND_PROXY');
-                $proxyPort = Environment::getEnv('SS_OUTBOUND_PROXY_PORT');
-                $proxy = [
-                    'proxy' => [
-                        'http'  => sprintf('tcp://%s:%s', $proxy, $proxyPort), // Use this proxy with "http"
-                        'https' => sprintf('tcp://%s:%s', $proxy, $proxyPort), // Use this proxy with "https",
-                    ],
-                ];
-            }
-
-            if ($type == 'get') {
-                $response = $client->get($parameters, $proxy);
-            } elseif ($type == 'post') {
-                $response = $client->post($parameters, $proxy);
-            } else {
-                return null;
-            }
-
+       
             if ($response->getStatusCode() === 200) {
-                return $response->getBody()->getContents();
+                return $response->getBody();
             } else {
                 throw new \Exception(sprintf(
                     'StatusCode: %s. StatusDescription: %s.',
@@ -89,7 +62,7 @@ class BusStopGateway
 
             Injector::inst()->get(LoggerInterface::class)->error(
                 sprintf(
-                    'Error in WorkplaceGateway::call(%s). %s',
+                    'Error in BusStopGateway::call(%s). %s',
                     $parameters,
                     $e->getMessage()
                 ),
@@ -100,7 +73,7 @@ class BusStopGateway
         } catch (\Exeception $e) {
             Injector::inst()->get(LoggerInterface::class)->error(
                 sprintf(
-                    'Error in WorkplaceGateway::call(%s). %s',
+                    'Error in BusStopGateway::call(%s). %s',
                     $parameters,
                     $e->getMessage()
                 ),
