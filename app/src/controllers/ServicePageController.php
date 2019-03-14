@@ -12,7 +12,7 @@ use PageController;
 class ServicePageController extends PageController
 {
     public function init() {
-        $this->getList();
+        $this->getServiceList();
 
         parent::init();
     }
@@ -22,10 +22,10 @@ class ServicePageController extends PageController
      *
      * @return ArrayList
      */
-    public function getList()
+    public function getServiceList()
     {
         $BusStopService = Injector::inst()->get(BusStopService::class)->getAllBusStop();
-        
+            
         return $BusStopService;
     }
 }
