@@ -13,8 +13,7 @@ use SilverStripe\Core\Environment;
  * The calls are made to endpoints using a {@link Client}.
  */
 class BusStopGateway
-{  
-    
+{   
     /**
      * https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5
      * @return null|string
@@ -22,9 +21,7 @@ class BusStopGateway
     public function getAllStops()
     {   
         return $this->call('get', sprintf(
-            '?limit=%d',
-            Environment::getEnv('SS4form_ID'),
-            Config::inst()->get(BusStopGateway::class)
+            'https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5'
         ));
     }
 
@@ -41,11 +38,13 @@ class BusStopGateway
     public function call($type, $parameters)
     {
         $client = new Client([
-            'base_uri' => Environment::getEnv('https://catalogue.data.govt.nz/api/3/'),
+            'base_uri' => Environment::getEnv('https://catalogue.data.govt.nz/api/3/action/datastore_search?resource_id=205a2d33-18c9-402e-9f58-40f7c5243f36&limit=5'),
             'headers'  => [
                 'Authorization' => sprintf('Bearer %s', Environment::getEnv('token_goes_here'))
             ]
         ]);
+
+        //var_dump($client);
 
         try {
             $proxy = [];
